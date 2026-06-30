@@ -2,7 +2,19 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tuundavi-be2",
   "main": "src/index.ts",
-  "compatibility_date": "2026-06-25"
+  "compatibility_date": "2026-06-25",
+  "dev": {
+    "ip": "192.168.1.1",
+    "port": 8080,
+    "local_protocol": "http",
+  },
+  "secrets": {
+    "required": ["TURSO_AUTH_TOKEN", "TURSO_CONNECTION_URL", "JWT_SECRET"],
+  },
+  "assets": { 
+    "directory": "src/public/static/images",
+    "binding": "ASSETS" 
+  },
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],

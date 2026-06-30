@@ -1,0 +1,11 @@
+
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "@cloudflare/workers-types"],
+    "lib": ["ES2020"],
+    "module": "ESNext",
+    "moduleResolution": "node"
+  },
+  "include": ["drizzle.config.ts", "src/db/**/*.ts"]
+}
