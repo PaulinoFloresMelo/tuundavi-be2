@@ -9,9 +9,17 @@ import { dbMiddleware } from './middlewares/db'
 
 const app = factory.createApp()
 
+const allowedOrigins = ['http://localhost:4200', 'https://tuundavi-be2.paquirris983.workers.dev/'];
+
 // CORS should be called before the route
 app.use('/api/*', cors({ 
-  origin: '*', 
+  // origin: '*', 
+  origin: (origin) => {
+    if (allowedOrigins.includes(origin || '')) {
+      return origin;
+    }
+    return 'http://localhost:4200'; // fallback
+  },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }))
