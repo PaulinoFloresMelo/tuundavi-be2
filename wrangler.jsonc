@@ -12,8 +12,8 @@
     "required": ["TURSO_AUTH_TOKEN", "TURSO_CONNECTION_URL", "JWT_SECRET"],
   },
   "assets": { 
-    "directory": "src/public",
-    "binding": "ASSETS" 
+    "directory": "./public",
+    "binding": "ASSETS",
   },
   // "compatibility_flags": [
   //   "nodejs_compat"

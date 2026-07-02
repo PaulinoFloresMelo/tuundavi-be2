@@ -5,8 +5,9 @@ export const imageRouter = factory.createApp()
 imageRouter.get('/:image', async (c) => {
   const imageName = c.req.param('image')
 
-  const assetPath = `/static/images/${imageName}`
-  const assetRequest = new Request(new URL( assetPath, c.req.url ))
+  const assetPath = `public/static/images/${imageName}`
+  // const assetRequest = new Request(new URL(assetPath, c.req.url))
+  const assetRequest = new Request(new URL(assetPath, c.req.url))
 
   const assetResponse = await c.env.ASSETS.fetch(assetRequest)
 
