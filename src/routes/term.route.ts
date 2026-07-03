@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validator } from 'hono/validator';
 import { eq } from 'drizzle-orm';
 import { factory } from '../factory'
 import { zValidator } from '@hono/zod-validator';
@@ -6,27 +7,75 @@ import { termsTable } from "../db/schema";
 
 export const termRouter = factory.createApp()
 
+const queryValidation = validator('query', (value, c) => {
+  const offset = Number(value?.offset) || 0;
+  const limit = Number(value?.limit) || 99;
+  const category = String(value?.category ?? '');
+
+  if (isNaN(offset) || offset < 0) return c.json({ error: 'Offset inválido' }, 400);
+  if (isNaN(limit) || limit > 100) return c.json({ error: 'Límite excede el máximo' }, 400);
+  if (category === "undefined" ) return c.json({ error: 'Categoría inválida' }, 400);
+
+  return { offset, limit, category };
+});
+
 const registerTermSchema = z.object({
     content: z.string().trim().toLowerCase(),
     imageUrl: z.string().trim().toLowerCase(),
     audioUrl: z.string().trim().toLowerCase(),
     example: z.string().trim().toLowerCase(),
+    category: z.string().trim().toLowerCase(),
     userId: z.number(),
 })
+
+const updateTermSchema = z.object({
+   content: z.string().trim().toLowerCase().optional(),
+    imageUrl: z.string().trim().toLowerCase().optional(),
+    audioUrl: z.string().trim().toLowerCase().optional(),
+    example: z.string().trim().toLowerCase().optional(),
+    category: z.string().trim().toLowerCase().optional(),
+    userId: z.number().optional(),
+});
 
 
 // /api/v1/terms
 termRouter.get(
     "/",
+    queryValidation,
     async(c) => {
+        const { offset, limit, category } = c.req.valid('query');
         const db = c.get('db')
-        const terms = await db
-        .select()
-        .from(termsTable)
-        .limit(3);
+        if (category.length !== 0) {
+            const [terms, total] = await Promise.all([
 
-        return c.json({terms})
-});
+            db.select()
+            .from(termsTable)
+            .limit(limit)
+            .offset(offset)
+            .where(eq(termsTable.category, category)),
+            
+            db.select()
+            .from(termsTable)
+        ]);
+        return c.json({
+            count: total.length, totalPages: Math.ceil(total.length / limit), terms}) 
+        }
+
+        const [terms, total] = await Promise.all([
+
+            db.select()
+            .from(termsTable)
+            .limit(limit)
+            .offset(offset),
+            
+            db.select()
+            .from(termsTable)
+        ]);
+
+        return c.json({
+            count: total.length, pages: Math.ceil(total.length / limit), terms})         
+}
+);
 
 
 // /api/v1/terms/:id
@@ -44,8 +93,35 @@ termRouter.get(
         return c.json(term[0])
 });
 
+// /api/v1/terms/:id
+termRouter.patch(
+    "/:id",
+    zValidator('json', updateTermSchema),
+    async(c) => {
+        const id = c.req.param('id')
+        
+        const db = c.get('db')
+        const updateData = c.req.valid('json');
+
+        const result = await db
+        .update(termsTable)
+        .set(updateData)
+        .where(eq(termsTable.id, Number(id)))
+        .returning();
+
+        if (result.length === 0) {
+            return c.json({ error: 'Usuario no encontrado' }, 404);
+        }
+
+        return c.json(result[0]);
+    }
+);
+
 // /api/v1/terms/term-register
-termRouter.post("/term-register", zValidator("json", registerTermSchema),
+// termRouter.post("/term-register", zValidator("json", registerTermSchema),
+
+// /api/v1/terms
+termRouter.post("/", zValidator("json", registerTermSchema),
     async(c) => {
     
     const { 
@@ -53,7 +129,9 @@ termRouter.post("/term-register", zValidator("json", registerTermSchema),
         imageUrl,
         audioUrl,
         example,
-        userId,  } = await c.req.json();
+        userId,
+        category
+      } = await c.req.json();
 
     const db = c.get('db')
     const [term] = await db
@@ -70,6 +148,7 @@ termRouter.post("/term-register", zValidator("json", registerTermSchema),
         imageUrl: imageUrl,
         audioUrl: audioUrl,
         example: example,
+        category: category,
         userId: userId,
     }).returning({
         id: termsTable.id,
@@ -77,6 +156,7 @@ termRouter.post("/term-register", zValidator("json", registerTermSchema),
         imageUrl: termsTable.imageUrl,
         audioUrl: termsTable.audioUrl,
         example: termsTable.example,
+        category: termsTable.category,
         userId: termsTable.userId,
     })
 

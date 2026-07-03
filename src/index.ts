@@ -21,7 +21,7 @@ app.use('/api/*', cors({
     }
     return 'http://localhost:4200'; // fallback
   },
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }))
 

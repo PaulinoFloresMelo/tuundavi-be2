@@ -4,6 +4,7 @@ CREATE TABLE `terms` (
 	`image_url` text NOT NULL,
 	`audio_url` text NOT NULL,
 	`example` text NOT NULL,
+	`category` text NOT NULL,
 	`user_id` integer NOT NULL,
 	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
