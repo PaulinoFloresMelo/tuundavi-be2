@@ -1,6 +1,7 @@
 
 import { authRouter } from './routes/auth.route';
 import { termRouter } from './routes/term.route';
+import { imageRouter} from './routes/image.route';
 import { cors } from 'hono/cors';
 import { factory } from './factory'
 
@@ -28,7 +29,7 @@ app.use('*', dbMiddleware)
 
 app.route('/api/v1/auth', authRouter)
 app.route('/api/v1/terms', termRouter)
-// app.route('/api/v1/images', imageRouter)
+app.route('/api/v1/images', imageRouter)
 
 
 // Habilitar CORS para todas las rutas con todos los orígenes, métodos y encabezados
