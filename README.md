@@ -20,3 +20,7 @@ Pass the `CloudflareBindings` as generics when instantiating `Hono`:
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 ```
 # tuundavi-be2
+
+```txt
+npx wrangler deploy 
+```

@@ -20,6 +20,10 @@
     {
       "binding": "IMAGES_BUCKET",
       "bucket_name": "tuundavi-images"
+    },
+    {
+      "binding": "AUDIO_BUCKET",
+      "bucket_name": "tuundavi-audio"
     }
   ],
   "observability": {

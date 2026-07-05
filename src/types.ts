@@ -8,6 +8,7 @@ export type Env = {
   TURSO_AUTH_TOKEN: string,
   ASSETS: Fetcher;
   IMAGES_BUCKET: R2Bucket;
+  AUDIO_BUCKET: R2Bucket;
 }
 
 export type Variables = {
