@@ -13,8 +13,24 @@ imageRouter.get('/:image', async (c) => {
   const assetResponse = await c.env.ASSETS.fetch(assetRequest);
 
   if (assetResponse.status === 404) {
-    return c.notFound();
-  }
+    const bucket = c.env.IMAGES_BUCKET;
+    const object = await bucket.get(imageName);
+    
+    if(object){
+  
+      const body = await object.arrayBuffer();
+      const contentType = imageName.endsWith('.png') ? 'image/png' :
+                        imageName.endsWith('.jpg') || imageName.endsWith('.jpeg') ? 'image/jpeg' :
+                        'application/octet-stream';
+
+      return new Response(body, {
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=86400',
+        },
+      });
+    }
+    }
 
   if (!assetResponse.ok) {
     return c.json('Error al obtener imagen');
