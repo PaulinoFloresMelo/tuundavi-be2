@@ -144,39 +144,4 @@ audioRouter.post('/upload', async (c) => {
   }
 });
 
-// POST api/v1/images/upload - para subir imágenes
-audioRouter.post('/upload', async (c) => {
-  const body = await c.req.parseBody();
-  const file = body['image']; // el nombre del campo en el formulario
-
-  if (!file || !(file instanceof File)) {
-    return c.json({ error: 'No se proporcionó un archivo válido' }, 400);
-  }
-
-  // Genera un nombre único para la imagen
-  const timestamp = Date.now();
-  const extension = file.name.split('.').pop();
-  const fileName = `${timestamp}.${extension}`;
-
-  // Guarda en R2
-  const bucket = c.env.IMAGES_BUCKET;
-  const arrayBuffer = await file.arrayBuffer();
-  
-  await bucket.put(fileName, arrayBuffer, {
-    httpMetadata: {
-      contentType: file.type,
-    },
-  });
-
-  // Devuelve la URL pública (si tienes un dominio o usas la URL del Worker)
-  const baseUrl = new URL(c.req.url);
-  const imageUrl = `${baseUrl.origin}/images/${fileName}`;
-
-  return c.json({
-    message: 'Imagen subida correctamente',
-    url: imageUrl,
-    fileName,
-  });
-});
-
 export default audioRouter
