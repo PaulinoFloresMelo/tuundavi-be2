@@ -131,10 +131,7 @@ audioRouter.post('/upload', async (c) => {
 
     return c.json({
       message: 'Audio subido correctamente',
-      filename: audioFile.name,
-      key: key,
-      size: audioFile.size,
-      type: audioFile.type,
+      fileName: key,
       url: publicUrl,
     }, 201);
 

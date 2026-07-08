@@ -29,7 +29,7 @@ const registerTermSchema = z.object({
 })
 
 const updateTermSchema = z.object({
-   content: z.string().trim().toLowerCase().optional(),
+    content: z.string().trim().toLowerCase().optional(),
     imageUrl: z.string().trim().toLowerCase().optional(),
     audioUrl: z.string().trim().toLowerCase().optional(),
     example: z.string().trim().toLowerCase().optional(),
@@ -160,7 +160,7 @@ termRouter.post("/", zValidator("json", registerTermSchema),
         userId: termsTable.userId,
     })
 
-    return c.json({newTerm})
+    return c.json(newTerm[0])
 })
 
 export default termRouter;
