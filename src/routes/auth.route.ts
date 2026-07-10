@@ -65,7 +65,7 @@ authRouter.post("/login", zValidator("json", loginSchema),
         const secretKey = c.env.JWT_SECRET as string;
         const token = await sign(payload, secretKey, "HS256")
 
-        const userResponse = {email:user.email, userId: user.id};
+        const userResponse = {email:user.email, userId: user.id, username: user.firstName};
 
         return c.json({ user: userResponse, token })
     }
@@ -135,7 +135,7 @@ authRouter.get("/check-status",
         return c.json({message: "Credentials invalid"}, 404 )
     }
 
-    const userResponse = {email:user.email, userId: user.id};
+    const userResponse = {email:user.email, userId: user.id, username: user.firstName};
     
     const payload = {
         id: user.id, 
