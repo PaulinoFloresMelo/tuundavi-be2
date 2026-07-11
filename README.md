@@ -24,3 +24,14 @@ const app = new Hono<{ Bindings: CloudflareBindings }>()
 ```txt
 npx wrangler deploy 
 ```
+
+```txt
+npx drizzle-kit generate
+```
+
+```txt
+npx drizzle-kit migrate
+```
+```txt
+npx drizzle-kit push
+```

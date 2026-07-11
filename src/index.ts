@@ -1,6 +1,7 @@
 
 import { authRouter } from './routes/auth.route';
 import { termRouter } from './routes/term.route';
+import { variantRouter } from './routes/variant.route';
 import { imageRouter} from './routes/image.route';
 import { audioRouter} from './routes/audio.route';
 import { cors } from 'hono/cors';
@@ -30,6 +31,7 @@ app.use('*', dbMiddleware)
 
 app.route('/api/v1/auth', authRouter)
 app.route('/api/v1/terms', termRouter)
+app.route('/api/v1/variants', variantRouter)
 app.route('/api/v1/images', imageRouter)
 app.route('/api/v1/audio', audioRouter)
 

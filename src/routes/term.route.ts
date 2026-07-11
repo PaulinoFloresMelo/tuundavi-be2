@@ -21,22 +21,25 @@ const queryValidation = validator('query', (value, c) => {
 
 const registerTermSchema = z.object({
     content: z.string().trim().toLowerCase(),
+    meaning: z.string().trim().toLowerCase(),
     imageUrl: z.string().trim().toLowerCase(),
     audioUrl: z.string().trim().toLowerCase(),
     example: z.string().trim().toLowerCase(),
     category: z.string().trim().toLowerCase(),
     userId: z.number(),
+    variantId: z.number(),
 })
 
 const updateTermSchema = z.object({
     content: z.string().trim().toLowerCase().optional(),
+    meaning: z.string().trim().toLowerCase().optional(),
     imageUrl: z.string().trim().toLowerCase().optional(),
     audioUrl: z.string().trim().toLowerCase().optional(),
     example: z.string().trim().toLowerCase().optional(),
     category: z.string().trim().toLowerCase().optional(),
     userId: z.number().optional(),
+    variantId: z.number().optional(),
 });
-
 
 // /api/v1/terms
 termRouter.get(
@@ -117,19 +120,18 @@ termRouter.patch(
     }
 );
 
-// /api/v1/terms/term-register
-// termRouter.post("/term-register", zValidator("json", registerTermSchema),
-
 // /api/v1/terms
 termRouter.post("/", zValidator("json", registerTermSchema),
     async(c) => {
     
     const { 
-        content, 
+        content,
+        meaning, 
         imageUrl,
         audioUrl,
         example,
         userId,
+        variantId,
         category
       } = await c.req.json();
 
@@ -145,19 +147,23 @@ termRouter.post("/", zValidator("json", registerTermSchema),
 
     const newTerm = await db.insert(termsTable).values({
         content: content,
+        meaning: meaning,
         imageUrl: imageUrl,
         audioUrl: audioUrl,
         example: example,
         category: category,
         userId: userId,
+        variantId: variantId,
     }).returning({
         id: termsTable.id,
         content: termsTable.content,
+        meaning: termsTable.meaning,
         imageUrl: termsTable.imageUrl,
         audioUrl: termsTable.audioUrl,
         example: termsTable.example,
         category: termsTable.category,
         userId: termsTable.userId,
+        cariantId: termsTable.variantId,
     })
 
     return c.json(newTerm[0])
