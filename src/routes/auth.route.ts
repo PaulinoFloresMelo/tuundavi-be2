@@ -135,7 +135,13 @@ authRouter.get("/check-status",
         return c.json({message: "Credentials invalid"}, 404 )
     }
 
-    const userResponse = {email:user.email, userId: user.id, username: user.firstName};
+    const userResponse = {
+        email: user.email, 
+        userId: user.id, 
+        username: user.firstName,
+        isActive: user.isActive,
+        isAdmin: user.isAdmin,
+    };
     
     const payload = {
         id: user.id, 

@@ -10,7 +10,9 @@ export const usersTable = sqliteTable('users', {
   maternalName: text('maternal_name'),
   paternalName: text('paternal_name'),
   email: text('email').unique().notNull(),
-  password: text('password').notNull()
+  password: text('password').notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  isAdmin: integer('is_admin', { mode: 'boolean' }).notNull().default(false),
 });
 
 export const usersRelations = relations(usersTable, ({ many }) => ({
