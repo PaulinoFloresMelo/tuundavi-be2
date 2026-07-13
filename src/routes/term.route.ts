@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { validator } from 'hono/validator';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { factory } from '../factory'
 import { zValidator } from '@hono/zod-validator';
 import { termsTable } from "../db/schema";
@@ -39,6 +39,10 @@ const updateTermSchema = z.object({
     category: z.string().trim().toLowerCase().optional(),
     userId: z.number().optional(),
     variantId: z.number().optional(),
+});
+
+export const searchTermSchema = z.object({
+  q: z.string().min(1, 'El término de búsqueda es requerido'),
 });
 
 // /api/v1/terms
@@ -94,6 +98,36 @@ termRouter.get(
         .where(eq(termsTable.id, parseInt(id)))
 
         return c.json(term[0])
+});
+
+// GET /api/v1/terms/search?q=mi-contenido
+termRouter.get('/search', zValidator('query', searchTermSchema), async (c) => {
+  const { q } = c.req.valid('query');
+  const db = c.get('db');
+
+  try {
+    // Buscar el primer resultado que coincida (parcial o exacto)
+    const result = await db
+      .select()
+      .from(termsTable)
+    //   .where(
+    //     sql`${termsTable.content} LIKE ${'%' + q + '%'} COLLATE NOCASE`
+    //   )
+        .where(eq(termsTable.content, q))
+    //   .limit(1);
+
+    if (result.length === 0) {
+      return c.json(
+        { success: false, message: 'Término no encontrado' },
+        404
+      );
+    }
+
+    return c.json({ success: true, data: result[0] });
+  } catch (error) {
+    console.error('Error al buscar término:', error);
+    return c.json({ success: false, error: 'Error interno del servidor' }, 500);
+  }
 });
 
 // /api/v1/terms/:id
