@@ -101,34 +101,38 @@ termRouter.get(
 });
 
 // GET /api/v1/terms/search?q=mi-contenido
-termRouter.get('/search', zValidator('query', searchTermSchema), async (c) => {
-  const { q } = c.req.valid('query');
-  const db = c.get('db');
+termRouter.get('/search', 
+    async (c) => {
+        // const q = c.req.param('q')
+        const q = c.req.query('q');
+  
+        const db = c.get('db');
 
-  try {
-    // Buscar el primer resultado que coincida (parcial o exacto)
-    const result = await db
-      .select()
-      .from(termsTable)
-    //   .where(
-    //     sql`${termsTable.content} LIKE ${'%' + q + '%'} COLLATE NOCASE`
-    //   )
-        .where(eq(termsTable.content, q))
-    //   .limit(1);
+        if (!q) {
+            return c.json({ success: false, message: 'El parámetro "q" es requerido' }, 400);
+        }
 
-    if (result.length === 0) {
-      return c.json(
-        { success: false, message: 'Término no encontrado' },
-        404
-      );
+        try {
+            // Buscar el primer resultado que coincida (parcial o exacto)
+            const result = await db
+            .select()
+            .from(termsTable)
+            .where(eq(termsTable.content, q))
+
+            if (result.length === 0) {
+            return c.json(
+                { success: false, message: 'Término no encontrado' },
+                404
+            );
+            }
+
+            return c.json({ success: true, data: result[0] });
+        } catch (error) {
+            console.error('Error al buscar término:', error);
+            return c.json({ success: false, error: 'Error interno del servidor' }, 500);
+        }
     }
-
-    return c.json({ success: true, data: result[0] });
-  } catch (error) {
-    console.error('Error al buscar término:', error);
-    return c.json({ success: false, error: 'Error interno del servidor' }, 500);
-  }
-});
+);
 
 // /api/v1/terms/:id
 termRouter.patch(
