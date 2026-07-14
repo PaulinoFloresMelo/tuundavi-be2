@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { validator } from 'hono/validator';
-import { eq, sql } from 'drizzle-orm';
+import { eq, like, or, sql } from 'drizzle-orm';
 import { factory } from '../factory'
 import { zValidator } from '@hono/zod-validator';
 import { termsTable } from "../db/schema";
@@ -52,6 +52,7 @@ termRouter.get(
     async(c) => {
         const { offset, limit, category } = c.req.valid('query');
         const db = c.get('db')
+
         if (category.length !== 0) {
             const [terms, total] = await Promise.all([
 
@@ -64,6 +65,7 @@ termRouter.get(
             db.select()
             .from(termsTable)
         ]);
+
         return c.json({
             count: total.length, totalPages: Math.ceil(total.length / limit), terms}) 
         }
@@ -84,22 +86,6 @@ termRouter.get(
 }
 );
 
-
-// /api/v1/terms/:id
-termRouter.get(
-    "/:id",
-    async(c) => {
-        const id = c.req.param('id')
-        
-        const db = c.get('db')
-        const term = await db
-        .select()
-        .from(termsTable)
-        .where(eq(termsTable.id, parseInt(id)))
-
-        return c.json(term[0])
-});
-
 // GET /api/v1/terms/search?q=mi-contenido
 termRouter.get('/search', 
     async (c) => {
@@ -114,25 +100,57 @@ termRouter.get('/search',
 
         try {
             // Buscar el primer resultado que coincida (parcial o exacto)
-            const result = await db
+            const terms = await db
             .select()
             .from(termsTable)
-            .where(eq(termsTable.content, q))
+            .where(
+                or(
+                    like(sql`LOWER(${termsTable.content})`, `%${q.toLowerCase()}%`),
+                    like(sql`LOWER(${termsTable.meaning})`, `%${q.toLowerCase()}%`)
+                )
+            )
+            .limit(10); // puedes ajustar o quitar el límite según necesites
 
-            if (result.length === 0) {
+            if (terms.length === 0) {
             return c.json(
                 { success: false, message: 'Término no encontrado' },
                 404
             );
             }
 
-            return c.json({ success: true, data: result[0] });
+            // return c.json({ success: true, data: result[0] });
+            return c.json({ success: true, terms: terms });
         } catch (error) {
             console.error('Error al buscar término:', error);
             return c.json({ success: false, error: 'Error interno del servidor' }, 500);
         }
     }
 );
+
+// /api/v1/terms/:id
+termRouter.get(
+    "/:id",
+    async(c) => {
+        const id = c.req.param('id')
+
+        // Validación extra para evitar NaN
+        const idNum = parseInt(id);
+        if (isNaN(idNum)) {
+            return c.json({ success: false, message: 'ID inválido' }, 400);
+        }
+        
+        const db = c.get('db')
+        const term = await db
+        .select()
+        .from(termsTable)
+        .where(eq(termsTable.id, parseInt(id)))
+
+        if (!term.length) {
+            return c.json({ success: false, message: 'Término no encontrado' }, 404);
+        }
+
+        return c.json(term[0])
+});
 
 // /api/v1/terms/:id
 termRouter.patch(
