@@ -15,7 +15,7 @@ audioRouter.get('/:audioName', async (c) => {
     
     // 2. Validar seguridad (evitar path traversal)
     if (!audioName || audioName.includes('..') || audioName.includes('/')) {
-      return c.json({ error: 'Nombre de archivo inválido' }, 400);
+      return c.json({ message: 'Nombre de archivo inválido' }, 400);
     }
 
     // 3. Construir la clave en R2 (debe coincidir con la estructura al subir)
@@ -61,7 +61,7 @@ audioRouter.get('/:audioName', async (c) => {
 
   } catch (error) {
     console.error('Error al obtener audio:', error);
-    return c.json({ error: 'Error interno al recuperar el archivo' }, 500);
+    return c.json({ message: 'Error interno al recuperar el archivo' }, 500);
   }
 });
 
@@ -73,33 +73,35 @@ audioRouter.post('/upload', async (c) => {
     // 1. Parsear el formulario multipart
     const body = await c.req.parseBody();
     const audioFile = body['audio']; // campo esperado
+     // Luego validas la extensión como fallback
 
     // 2. Validar que sea un archivo
     if (!audioFile || !(audioFile instanceof File)) {
-      return c.json({ error: 'No se proporcionó un archivo de audio válido' }, 400);
+      return c.json({ message: 'No se proporcionó un archivo de audio válido' }, 400);
     }
 
-    // 3. Validar tipo MIME (formatos de audio comunes)
-    const allowedTypes = [
-      'audio/mpeg',      // MP3
-      'audio/wav',       // WAV
-      'audio/ogg',       // OGG
-      'audio/flac',      // FLAC
-      'audio/aac',       // AAC
-      'audio/mp4',       // M4A
-      'audio/webm',      // WebM
+    const allowedMimeTypes = [
+      'audio/mpeg',
+      'audio/wav',
+      'audio/ogg',
+      'audio/flac',
+      'audio/aac',
+      'audio/mp4',
+      'audio/x-m4a',
+      'audio/m4a',
+      'audio/webm',
     ];
 
-    if (!allowedTypes.includes(audioFile.type)) {
-      return c.json({ 
-        error: `Formato no soportado. Permitidos: ${allowedTypes.join(', ')}` 
+    if (!allowedMimeTypes.includes(audioFile.type)) {
+      return c.json({
+        message: `Formato no soportado. MIME recibido: ${audioFile.type}. Permitidos: ${allowedMimeTypes.join(', ')}`,
       }, 400);
     }
 
     // 4. Validar tamaño (opcional, ya lo hace bodyLimit)
-    const maxSize = 20 * 1024 * 1024; // 20 MB
+    const maxSize = 5 * 1024 * 1024; // 5 MB
     if (audioFile.size > maxSize) {
-      return c.json({ error: 'El archivo excede el límite de 20 MB' }, 400);
+      return c.json({ error: 'El archivo excede el límite de 5 MB' }, 400);
     }
 
     // 5. Leer el contenido del archivo
@@ -137,7 +139,7 @@ audioRouter.post('/upload', async (c) => {
 
   } catch (error) {
     console.error('Error al subir audio:', error);
-    return c.json({ error: 'Error interno al procesar el archivo' }, 500);
+    return c.json({ message: 'Error interno al procesar el archivo' }, 500);
   }
 });
 
