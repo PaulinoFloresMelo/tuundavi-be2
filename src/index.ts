@@ -12,7 +12,7 @@ import { dbMiddleware } from './middlewares/db'
 
 const app = factory.createApp()
 
-const allowedOrigins = ['http://localhost:4200', 'https://tuundavi-be2.paquirris983.workers.dev/'];
+const allowedOrigins = ['http://localhost:4200', 'https://paulinofloresmelo.github.io'];
 
 // CORS should be called before the route
 app.use('/api/*', cors({ 

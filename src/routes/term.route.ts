@@ -27,6 +27,7 @@ const registerTermSchema = z.object({
     imageUrl: z.string().trim().toLowerCase(),
     audioUrl: z.string().trim().toLowerCase(),
     example: z.string().trim().toLowerCase(),
+    translationExample: z.string().trim().toLowerCase(),
     category: z.string().trim().toLowerCase(),
     userId: z.number(),
     variantId: z.number(),
@@ -38,6 +39,7 @@ const updateTermSchema = z.object({
     imageUrl: z.string().trim().toLowerCase().optional(),
     audioUrl: z.string().trim().toLowerCase().optional(),
     example: z.string().trim().toLowerCase().optional(),
+    translationExample: z.string().trim().toLowerCase().optional(),
     category: z.string().trim().toLowerCase().optional(),
     userId: z.number().optional(),
     variantId: z.number().optional(),
@@ -65,6 +67,7 @@ termRouter.get(
             imageUrl: termsTable.imageUrl,
             audioUrl: termsTable.audioUrl,
             example: termsTable.example,
+            translationExample: termsTable.translationExample,
             
             userId: usersTable.id,
             username: usersTable.firstName,
@@ -111,6 +114,7 @@ termRouter.get(
             imageUrl: row.imageUrl,
             audioUrl: row.audioUrl,
             example: row.example,
+            translationExample: row.translationExample,
             user: {
                 userId: row.id,
                 username: row.username,
@@ -127,8 +131,8 @@ termRouter.get(
 
         return c.json({
             count: total,
-            totalPages: Math.ceil(total / limit),
-            terms,
+            pages: Math.ceil(total / limit),
+            terms: terms,
             category
         });
     }
@@ -240,6 +244,7 @@ termRouter.get(
                 imageUrl: termsTable.imageUrl,
                 audioUrl: termsTable.audioUrl,
                 example: termsTable.example,
+                translationExample: termsTable.translationExample,
                 // ... otros campos que tengas en terms
                 
                 // Datos del usuario
@@ -274,6 +279,7 @@ termRouter.get(
             imageUrl: row.imageUrl,
             audioUrl: row.audioUrl,
             example: row.example,
+            translationExample: row.translationExample,
             user: row.userId ? {
                 id: row.userId,
                 username: row.username,
@@ -332,7 +338,7 @@ termRouter.patch(
         .returning();
 
         if (result.length === 0) {
-            return c.json({ error: 'Usuario no encontrado' }, 404);
+            return c.json({ error: 'Termino no encontrado ' }, 404);
         }
 
         return c.json(result[0]);
@@ -349,6 +355,7 @@ termRouter.post("/", zValidator("json", registerTermSchema),
         imageUrl,
         audioUrl,
         example,
+        translationExample,
         userId,
         variantId,
         category
@@ -370,6 +377,7 @@ termRouter.post("/", zValidator("json", registerTermSchema),
         imageUrl: imageUrl,
         audioUrl: audioUrl,
         example: example,
+        translationExample: translationExample,
         category: category,
         userId: userId,
         variantId: variantId,

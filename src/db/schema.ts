@@ -37,6 +37,7 @@ export const termsTable = sqliteTable('terms', {
   imageUrl: text('image_url').notNull(),
   audioUrl: text('audio_url').notNull(),
   example: text('example').notNull(),
+  translationExample: text('translation_example').notNull(),
   category: text('category').notNull(),
   userId: integer('user_id')
     .notNull()
