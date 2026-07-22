@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1783716919552,
-      "tag": "0000_hard_wendell_rand",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1783907936154,
-      "tag": "0001_puzzling_blue_shield",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1784064912499,
-      "tag": "0002_lame_madame_hydra",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1784065843826,
-      "tag": "0003_silly_supreme_intelligence",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1784129377473,
-      "tag": "0004_third_gabe_jones",
+      "when": 1784735546513,
+      "tag": "0000_eager_skaar",
       "breakpoints": true
     }
   ]

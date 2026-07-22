@@ -16,13 +16,13 @@ const allowedOrigins = ['http://localhost:4200', 'https://paulinofloresmelo.gith
 
 // CORS should be called before the route
 app.use('/api/*', cors({ 
-  // origin: '*', 
-  origin: (origin) => {
-    if (allowedOrigins.includes(origin || '')) {
-      return origin;
-    }
-    return 'http://localhost:4200'; // fallback
-  },
+  origin: '*', 
+  // origin: (origin) => {
+  //   if (allowedOrigins.includes(origin || '')) {
+  //     return origin;
+  //   }
+  //   return 'http://localhost:4200'; // fallback
+  // },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }))

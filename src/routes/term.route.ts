@@ -5,7 +5,6 @@ import { factory } from '../factory'
 import { zValidator } from '@hono/zod-validator';
 import { termsTable } from "../db/schema";
 import { variantsTable } from "../db/schema";
-import { usersTable } from "../db/schema";
 
 export const termRouter = factory.createApp()
 
@@ -13,170 +12,177 @@ const queryValidation = validator('query', (value, c) => {
   const offset = Number(value?.offset) || 0;
   const limit = Number(value?.limit) || 99;
   const category = String(value?.category ?? '');
+  const letter = String(value?.letter ?? '');
 
   if (isNaN(offset) || offset < 0) return c.json({ error: 'Offset inválido' }, 400);
   if (isNaN(limit) || limit > 100) return c.json({ error: 'Límite excede el máximo' }, 400);
   if (category === "undefined" ) return c.json({ error: 'Categoría inválida' }, 400);
+  if (letter === "undefined" ) return c.json({ error: 'Letra inválida' }, 400);
 
-  return { offset, limit, category };
+  return { offset, limit, category, letter };
 });
 
 const registerTermSchema = z.object({
-    content: z.string().trim().toLowerCase(),
-    meaning: z.string().trim().toLowerCase(),
-    imageUrl: z.string().trim().toLowerCase(),
-    audioUrl: z.string().trim().toLowerCase(),
-    example: z.string().trim().toLowerCase(),
-    translationExample: z.string().trim().toLowerCase(),
-    category: z.string().trim().toLowerCase(),
-    userId: z.number(),
-    variantId: z.number(),
+    meaning: z.string().trim().min(1).toLowerCase(),
+    imageUrl: z.string().trim().min(1).toLowerCase(),
+    category: z.string().trim().min(1).toLowerCase(),
 })
 
 const updateTermSchema = z.object({
-    content: z.string().trim().toLowerCase().optional(),
-    meaning: z.string().trim().toLowerCase().optional(),
-    imageUrl: z.string().trim().toLowerCase().optional(),
-    audioUrl: z.string().trim().toLowerCase().optional(),
-    example: z.string().trim().toLowerCase().optional(),
-    translationExample: z.string().trim().toLowerCase().optional(),
-    category: z.string().trim().toLowerCase().optional(),
-    userId: z.number().optional(),
-    variantId: z.number().optional(),
+    meaning: z.string().trim().min(1).toLowerCase().optional(),
+    imageUrl: z.string().trim().min(1).toLowerCase().optional(),
+    category: z.string().trim().min(1).toLowerCase().optional(),
 });
 
 export const searchTermSchema = z.object({
   q: z.string().min(1, 'El término de búsqueda es requerido'),
 });
 
+
 // /api/v1/terms
 termRouter.get(
-    "/",
-    queryValidation,
-    async (c) => {
-        const { offset, limit, category } = c.req.valid('query');
-        const db = c.get('db');
+  "/",
+  queryValidation,
+  async (c) => {
+    const { offset, limit, category, letter } = c.req.valid('query');
+    const db = c.get('db');
 
-        // Construir la consulta base con joins
-        let query = db.select({
-            // Campos de terms
-            id: termsTable.id,
-            category: termsTable.category,
-            content: termsTable.content,
-            meaning: termsTable.meaning,
-            imageUrl: termsTable.imageUrl,
-            audioUrl: termsTable.audioUrl,
-            example: termsTable.example,
-            translationExample: termsTable.translationExample,
-            
-            userId: usersTable.id,
-            username: usersTable.firstName,
-            maternalName: usersTable.maternalName,
-            paternalName: usersTable.paternalName,
-            
-            // Datos de la variante
-            variantId: variantsTable.id,
-            variantName: variantsTable.name,
-            variantDescription: variantsTable.description,
-            localityName: variantsTable.localityName,
-        })
-        .from(termsTable)
-        .leftJoin(usersTable, eq(termsTable.userId, usersTable.id))
-        .leftJoin(variantsTable, eq(termsTable.variantId, variantsTable.id))
-        .limit(limit)
-        .offset(offset)
-        .$dynamic();
+    // ---------- CONSTRUIR FILTROS DINÁMICOS ----------
+    const filters: any[] = [];
 
-        // Aplicar filtro por categoría si existe
-        if (category && category.length > 0) {
-            query = query.where(eq(termsTable.category, category));
-        }
-
-        // Ejecutar la consulta principal
-        const termsWithRelations = await query;
-
-        // Obtener el total de términos (para la paginación)
-        // Nota: Podrías hacer un count aparte o usar SQL_CALC_FOUND_ROWS, 
-        // pero con Drizzle lo más claro es una segunda consulta simple.
-        const totalQuery = db.select({ count: sql<number>`count(*)` })
-            .from(termsTable)
-            .where(category ? eq(termsTable.category, category) : sql`1=1`);
-        const totalResult = await totalQuery;
-        const total = Number(totalResult[0]?.count ?? 0);
-
-        // Opcional: Reestructurar la respuesta para que cada término tenga un objeto anidado
-        // En lugar de campos planos, puedes agruparlos en un objeto
-        const terms = termsWithRelations.map(row => ({
-            id: row.id,
-            category: row.category,
-            content: row.content,
-            meaning: row.meaning,
-            imageUrl: row.imageUrl,
-            audioUrl: row.audioUrl,
-            example: row.example,
-            translationExample: row.translationExample,
-            user: {
-                userId: row.id,
-                username: row.username,
-                maternalName: row.maternalName,
-                paternalName: row.paternalName,
-            },
-            variant: {
-                id: row.variantId,
-                name: row.variantName,
-                description: row.variantDescription,
-                localityName: row.localityName,
-            }
-        }));
-
-        return c.json({
-            count: total,
-            pages: Math.ceil(total / limit),
-            terms: terms,
-            category
-        });
+    if (category && category.length > 0) {
+      filters.push(eq(termsTable.category, category));
     }
+
+    if (letter && letter.length === 1) {
+      filters.push(
+        sql`LOWER(${termsTable.meaning}) LIKE LOWER(${letter + '%'})`
+      );
+    }
+
+    // ---------- CONSULTA PRINCIPAL (solo términos) ----------
+    let query = db
+      .select({
+        id: termsTable.id,
+        category: termsTable.category,
+        meaning: termsTable.meaning,
+        imageUrl: termsTable.imageUrl,
+        // Agrega aquí otros campos si los necesitas
+        // createdAt: termsTable.createdAt,
+      })
+      .from(termsTable)
+      .limit(limit)
+      .offset(offset)
+      .$dynamic();
+
+    if (filters.length > 0) {
+      query = query.where(sql`${sql.join(filters, sql` AND `)}`);
+    }
+
+    const terms = await query;
+
+    // ---------- CONTEO TOTAL (con los mismos filtros) ----------
+    let countQuery = db
+      .select({ count: sql<number>`count(*)` })
+      .from(termsTable)
+      .$dynamic();
+
+    if (filters.length > 0) {
+      countQuery = countQuery.where(sql`${sql.join(filters, sql` AND `)}`);
+    }
+
+    const totalResult = await countQuery;
+    const total = Number(totalResult[0]?.count ?? 0);
+
+    // ---------- RESPUESTA ----------
+    return c.json({
+      count: total,
+      pages: Math.ceil(total / limit),
+      terms: terms,
+      category: category || null,
+      letter: letter || null,
+    });
+  }
 );
 
-// termRouter.get(
-//     "/",
-//     queryValidation,
-//     async(c) => {
-//         const { offset, limit, category } = c.req.valid('query');
-//         const db = c.get('db')
+// GET /api/v1/terms/searchWithVariants?q=mi-contenido
+termRouter.get('/searchWithVariants',
+    async (c) => {
+      // const q = c.req.param('q')
+      const q = c.req.query('q');
 
-//         if (category.length !== 0) {
-//             const [terms, total] = await Promise.all([
+      const db = c.get('db');
 
-//             db.select()
-//             .from(termsTable)
-//             .limit(limit)
-//             .offset(offset)
-//             .where(eq(termsTable.category, category)),
-            
-//             db.select()
-//             .from(termsTable)
-//         ]);
+      if (!q) {
+          return c.json({ success: false, message: 'El parámetro "q" es requerido' }, 400);
+      }
 
-//         return c.json({
-//             count: total.length, totalPages: Math.ceil(total.length / limit), terms}) 
-//         }
+      try {
+          // Buscar el primer resultado que coincida (parcial o exacto)
+          const terms = await db
+          .select()
+          .from(termsTable)
+          .where(
+              or(
+                  like(sql`LOWER(${termsTable.meaning})`, `%${q.toLowerCase()}%`)
+              )
+          )
+          .limit(10); // puedes ajustar o quitar el límite según necesites
 
-//         const [terms, total] = await Promise.all([
+          if (terms.length === 0) {
+            return c.json(
+                { success: false, message: 'Término no encontrado' },
+                404
+            );
+          }
 
-//             db.select()
-//             .from(termsTable)
-//             .limit(limit)
-//             .offset(offset),
-            
-//             db.select()
-//             .from(termsTable)
-//         ]);
+          const variants = await db
+            .select({
+              id: variantsTable.id,
+              name: variantsTable.name,
+              content: variantsTable.content,
+              audioUrl: variantsTable.audioUrl,
+              example: variantsTable.example,
+              translationExample: variantsTable.translationExample,
+              state: variantsTable.state,
+              municipality: variantsTable.municipality,
+              locality: variantsTable.locality,
+              email: variantsTable.email,
+              isActive: variantsTable.isActive,
+              // Si quieres createdAt/updatedAt, agrégalos aquí
+            })
+            .from(variantsTable)
+            .where(eq(variantsTable.termId, terms[0].id));
 
-//         return c.json({
-//             count: total.length, pages: Math.ceil(total.length / limit), terms})         
-//     }
-// );
+            // 3. Armar respuesta anidada
+            const term = {
+              id: terms[0].id,
+              category: terms[0].category,
+              meaning: terms[0].meaning,
+              imageUrl: terms[0].imageUrl,
+              variants: variants.map(v => ({
+                id: v.id,
+                name: v.name,
+                state: v.state,
+                municipality: v.municipality,
+                locality: v.locality,
+                audioUrl: v.audioUrl,
+                example: v.example,
+                translationExample: v.translationExample,
+                email: v.email,
+                content: v.content,
+                isActive: v.isActive,
+              })),
+            };
+
+          // return c.json({ success: true, data: result[0] });
+          return c.json({ success: true, terms: term });
+      } catch (error) {
+          console.error('Error al buscar término:', error);
+          return c.json({ success: false, error: 'Error interno del servidor' }, 500);
+      }
+    }
+);
 
 // GET /api/v1/terms/search?q=mi-contenido
 termRouter.get('/search', 
@@ -197,7 +203,7 @@ termRouter.get('/search',
             .from(termsTable)
             .where(
                 or(
-                    like(sql`LOWER(${termsTable.content})`, `%${q.toLowerCase()}%`),
+                    // like(sql`LOWER(${termsTable.content})`, `%${q.toLowerCase()}%`),
                     like(sql`LOWER(${termsTable.meaning})`, `%${q.toLowerCase()}%`)
                 )
             )
@@ -221,110 +227,82 @@ termRouter.get('/search',
 
 // /api/v1/terms/:id
 termRouter.get(
-    "/:id",
-    async (c) => {
-        const id = c.req.param('id');
-
-        // Validación extra para evitar NaN
-        const idNum = parseInt(id);
-        if (isNaN(idNum)) {
-            return c.json({ success: false, message: 'ID inválido' }, 400);
-        }
-
-        const db = c.get('db');
-
-        // Consulta con joins
-        const result = await db
-            .select({
-                // Campos de terms
-                id: termsTable.id,
-                category: termsTable.category,
-                content: termsTable.content,
-                meaning: termsTable.meaning,
-                imageUrl: termsTable.imageUrl,
-                audioUrl: termsTable.audioUrl,
-                example: termsTable.example,
-                translationExample: termsTable.translationExample,
-                // ... otros campos que tengas en terms
-                
-                // Datos del usuario
-                userId: usersTable.id,
-                username: usersTable.firstName,
-                paternalName: usersTable.paternalName,
-                maternalName: usersTable.maternalName,
-                
-                 // Datos de la variante
-                variantId: variantsTable.id,
-                variantName: variantsTable.name,
-                variantDescription: variantsTable.description,
-                localityName: variantsTable.localityName,
-                // ... otros campos de variants
-            })
-            .from(termsTable)
-            .leftJoin(usersTable, eq(termsTable.userId, usersTable.id))
-            .leftJoin(variantsTable, eq(termsTable.variantId, variantsTable.id))
-            .where(eq(termsTable.id, idNum));
-
-        if (!result || result.length === 0) {
-            return c.json({ success: false, message: 'Término no encontrado' }, 404);
-        }
-
-        // 3. Estructurar la respuesta con objetos anidados
-        const row = result[0];
-        const term = {
-            id: row.id,
-            category: row.category,
-            content: row.content,
-            meaning: row.meaning,
-            imageUrl: row.imageUrl,
-            audioUrl: row.audioUrl,
-            example: row.example,
-            translationExample: row.translationExample,
-            user: row.userId ? {
-                id: row.userId,
-                username: row.username,
-                paternalName: row.paternalName,
-                maternalName: row.maternalName,
-            } : null, // si no hay usuario, devolvemos null
-            variant: row.variantId ? {
-                id: row.variantId,
-                name: row.variantName,
-                description: row.variantDescription,
-                localityName: row.localityName,
-            } : null,
-        };
-
-        return c.json(term);
+  "/:id",
+  async (c) => {
+    const id = c.req.param('id');
+    const idNum = parseInt(id);
+    if (isNaN(idNum)) {
+      return c.json({ success: false, message: 'ID inválido' }, 400);
     }
+
+    const db = c.get('db');
+
+    // 1. Obtener el término
+    const termResult = await db
+      .select({
+        id: termsTable.id,
+        category: termsTable.category,
+        meaning: termsTable.meaning,
+        imageUrl: termsTable.imageUrl,
+        // Agrega aquí otros campos que tenga termsTable (ej. createdAt, userId)
+      })
+      .from(termsTable)
+      .where(eq(termsTable.id, idNum))
+      .limit(1);
+
+    if (!termResult || termResult.length === 0) {
+      return c.json({ success: false, message: 'Término no encontrado' }, 404);
+    }
+
+    const termData = termResult[0];
+
+    // 2. Obtener TODAS las variantes de este término
+    const variants = await db
+      .select({
+        id: variantsTable.id,
+        name: variantsTable.name,
+        content: variantsTable.content,
+        audioUrl: variantsTable.audioUrl,
+        example: variantsTable.example,
+        translationExample: variantsTable.translationExample,
+        state: variantsTable.state,
+        municipality: variantsTable.municipality,
+        locality: variantsTable.locality,
+        email: variantsTable.email,
+        isActive: variantsTable.isActive,
+        // Si quieres createdAt/updatedAt, agrégalos aquí
+      })
+      .from(variantsTable)
+      .where(eq(variantsTable.termId, idNum));
+
+    // 3. Armar respuesta anidada
+    const term = {
+      id: termData.id,
+      category: termData.category,
+      meaning: termData.meaning,
+      imageUrl: termData.imageUrl,
+      variants: variants.map(v => ({
+        id: v.id,
+        name: v.name,
+        state: v.state,
+        municipality: v.municipality,
+        locality: v.locality,
+        audioUrl: v.audioUrl,
+        example: v.example,
+        translationExample: v.translationExample,
+        email: v.email,
+        content: v.content,
+        isActive: v.isActive,
+      })),
+    };
+
+    return c.json(term);
+  }
 );
-// termRouter.get(
-//     "/:id",
-//     async(c) => {
-//         const id = c.req.param('id')
 
-//         // Validación extra para evitar NaN
-//         const idNum = parseInt(id);
-//         if (isNaN(idNum)) {
-//             return c.json({ success: false, message: 'ID inválido' }, 400);
-//         }
-        
-//         const db = c.get('db')
-//         const term = await db
-//         .select()
-//         .from(termsTable)
-//         .where(eq(termsTable.id, parseInt(id)))
-
-//         if (!term.length) {
-//             return c.json({ success: false, message: 'Término no encontrado' }, 404);
-//         }
-
-//         return c.json(term[0])
-// });
 
 // /api/v1/terms/:id
-termRouter.patch(
-    "/:id",
-    zValidator('json', updateTermSchema),
+termRouter.patch("/:id", zValidator('json', updateTermSchema),
     async(c) => {
         const id = c.req.param('id')
         
@@ -350,47 +328,30 @@ termRouter.post("/", zValidator("json", registerTermSchema),
     async(c) => {
     
     const { 
-        content,
         meaning, 
         imageUrl,
-        audioUrl,
-        example,
-        translationExample,
-        userId,
-        variantId,
         category
-      } = await c.req.json();
+      } = c.req.valid('json');
 
     const db = c.get('db')
     const [term] = await db
     .select()
     .from(termsTable)
-    .where( eq(termsTable.content, content) )
+    .where( sql`LOWER(${termsTable.meaning}) = LOWER(${meaning})`)
 
     if (term) {
         return c.json({ message: "Term already registered" }, 400)
     }
 
     const newTerm = await db.insert(termsTable).values({
-        content: content,
         meaning: meaning,
         imageUrl: imageUrl,
-        audioUrl: audioUrl,
-        example: example,
-        translationExample: translationExample,
         category: category,
-        userId: userId,
-        variantId: variantId,
     }).returning({
         id: termsTable.id,
-        content: termsTable.content,
         meaning: termsTable.meaning,
         imageUrl: termsTable.imageUrl,
-        audioUrl: termsTable.audioUrl,
-        example: termsTable.example,
         category: termsTable.category,
-        userId: termsTable.userId,
-        cariantId: termsTable.variantId,
     })
 
     return c.json(newTerm[0])

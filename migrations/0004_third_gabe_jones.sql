@@ -1,1 +1,0 @@
-ALTER TABLE `terms` ADD `translation_example` text NOT NULL;
