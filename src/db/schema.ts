@@ -15,13 +15,10 @@ export const usersTable = sqliteTable('users', {
   isAdmin: integer('is_admin', { mode: 'boolean' }).notNull().default(false),
 });
 
-// export const usersRelations = relations(usersTable, ({ many }) => ({
-//   terms: many(termsTable),
-// }))
-
 export const variantsTable = sqliteTable('variants', {
   id: integer('id').primaryKey(),
-  name: text('name'),
+  name: text('name').notNull(),
+  meaning: text('meaning').notNull(),
   content: text('content').notNull(),
   audioUrl: text('audio_url').notNull(),
   example: text('example').notNull(),

@@ -20,26 +20,28 @@ const queryValidation = validator('query', (value, c) => {
 });
 
 const registerVariantSchema = z.object({
-    name: z.string().trim().min(1).toLowerCase(),
+    name: z.string().trim().min(1),
+    meaning: z.string().trim().min(1).toLowerCase(),
     content: z.string().trim().min(1).toLowerCase(),
-    audioUrl: z.string().trim().min(1).toLowerCase(),
-    example: z.string().trim().min(1).toLowerCase(),
-    translationExample: z.string().min(1).trim().toLowerCase(),
-    state:z.string().trim().min(1).toLowerCase(),
-    municipality: z.string().min(1).trim().toLowerCase(),
-    locality: z.string().trim().min(1).toLowerCase(),
+    audioUrl: z.string().trim().min(1),
+    example: z.string().trim().min(1),
+    translationExample: z.string().min(1).trim(),
+    state:z.string().trim().min(1),
+    municipality: z.string().min(1).trim(),
+    locality: z.string().trim().min(1),
     termId: z.number().min(1),
 })
 
 const updateVariantSchema = z.object({
-    name: z.string().trim().toLowerCase().min(1).optional(),
+    name: z.string().trim().min(1).optional(),
+    meaning: z.string().trim().min(1).toLowerCase().optional(),
     content: z.string().trim().toLowerCase().min(1).optional(),
-    audioUrl: z.string().trim().toLowerCase().min(1).optional(),
-    example: z.string().trim().toLowerCase().min(1).optional(),
-    translationExample: z.string().trim().min(1).toLowerCase().optional(),
-    state:z.string().trim().min(1).toLowerCase().optional(),
-    municipality: z.string().trim().min(1).toLowerCase().optional(),
-    locality: z.string().trim().min(1).toLowerCase().optional(),
+    audioUrl: z.string().trim().min(1).optional(),
+    example: z.string().trim().min(1).optional(),
+    translationExample: z.string().trim().min(1).optional(),
+    state:z.string().trim().min(1).optional(),
+    municipality: z.string().trim().min(1).optional(),
+    locality: z.string().trim().min(1).optional(),
     termId: z.number().min(1).optional(),
 });
 
@@ -104,6 +106,7 @@ variantRouter.post("/", zValidator("json", registerVariantSchema),
     
     const { 
         name,
+        meaning,
         content,
         audioUrl,
         example,
@@ -112,13 +115,14 @@ variantRouter.post("/", zValidator("json", registerVariantSchema),
         municipality,
         locality,
         termId
-      } = await c.req.json();
+      } = c.req.valid('json');
 
     const db = c.get('db')
 
     const newVariant = await db.insert(variantsTable).values({
         name: name,
         content: content,
+        meaning: meaning,
         audioUrl: audioUrl,
         example: example,
         translationExample: translationExample,
@@ -129,6 +133,7 @@ variantRouter.post("/", zValidator("json", registerVariantSchema),
     }).returning({
         id: variantsTable.id,
         name: variantsTable.name,
+        meaning: variantsTable.meaning,
         audioUrl: variantsTable.audioUrl,
         example: variantsTable.example,
         translationExample: variantsTable.translationExample,

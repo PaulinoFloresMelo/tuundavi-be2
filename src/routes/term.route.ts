@@ -67,8 +67,6 @@ termRouter.get(
         category: termsTable.category,
         meaning: termsTable.meaning,
         imageUrl: termsTable.imageUrl,
-        // Agrega aquí otros campos si los necesitas
-        // createdAt: termsTable.createdAt,
       })
       .from(termsTable)
       .limit(limit)
@@ -140,6 +138,7 @@ termRouter.get('/searchWithVariants',
             .select({
               id: variantsTable.id,
               name: variantsTable.name,
+              meaning: variantsTable.meaning,
               content: variantsTable.content,
               audioUrl: variantsTable.audioUrl,
               example: variantsTable.example,
@@ -163,6 +162,8 @@ termRouter.get('/searchWithVariants',
               variants: variants.map(v => ({
                 id: v.id,
                 name: v.name,
+                meaning: v.meaning,
+                content: v.content,
                 state: v.state,
                 municipality: v.municipality,
                 locality: v.locality,
@@ -170,7 +171,6 @@ termRouter.get('/searchWithVariants',
                 example: v.example,
                 translationExample: v.translationExample,
                 email: v.email,
-                content: v.content,
                 isActive: v.isActive,
               })),
             };
@@ -261,6 +261,7 @@ termRouter.get(
       .select({
         id: variantsTable.id,
         name: variantsTable.name,
+        meaning: variantsTable.meaning,
         content: variantsTable.content,
         audioUrl: variantsTable.audioUrl,
         example: variantsTable.example,
@@ -284,6 +285,8 @@ termRouter.get(
       variants: variants.map(v => ({
         id: v.id,
         name: v.name,
+        meaning: v.meaning,
+        content: v.content,
         state: v.state,
         municipality: v.municipality,
         locality: v.locality,
@@ -291,7 +294,6 @@ termRouter.get(
         example: v.example,
         translationExample: v.translationExample,
         email: v.email,
-        content: v.content,
         isActive: v.isActive,
       })),
     };

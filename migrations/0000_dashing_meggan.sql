@@ -20,7 +20,8 @@ CREATE TABLE `users` (
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
 CREATE TABLE `variants` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`name` text,
+	`name` text NOT NULL,
+	`meaning` text NOT NULL,
 	`content` text NOT NULL,
 	`audio_url` text NOT NULL,
 	`example` text NOT NULL,
