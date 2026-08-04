@@ -20,28 +20,28 @@ const queryValidation = validator('query', (value, c) => {
 });
 
 const registerVariantSchema = z.object({
-    name: z.string().trim().min(1),
+    variantNameId: z.number().min(1),
     meaning: z.string().trim().min(1).toLowerCase(),
     content: z.string().trim().min(1).toLowerCase(),
     audioUrl: z.string().trim().min(1),
     example: z.string().trim().min(1),
     translationExample: z.string().min(1).trim(),
-    state:z.string().trim().min(1),
-    municipality: z.string().min(1).trim(),
-    locality: z.string().trim().min(1),
+    stateId: z.number().min(1),
+    municipalityId: z.number().min(1),
+    localityId: z.number().min(1),
     termId: z.number().min(1),
 })
 
 const updateVariantSchema = z.object({
-    name: z.string().trim().min(1).optional(),
+    variantNameId: z.number().min(1).optional(),
     meaning: z.string().trim().min(1).toLowerCase().optional(),
     content: z.string().trim().toLowerCase().min(1).optional(),
     audioUrl: z.string().trim().min(1).optional(),
     example: z.string().trim().min(1).optional(),
     translationExample: z.string().trim().min(1).optional(),
-    state:z.string().trim().min(1).optional(),
-    municipality: z.string().trim().min(1).optional(),
-    locality: z.string().trim().min(1).optional(),
+    stateId:z.number().min(1).optional(),
+    municipalityId: z.number().min(1).optional(),
+    localityId: z.number().min(1).optional(),
     termId: z.number().min(1).optional(),
 });
 
@@ -105,41 +105,41 @@ variantRouter.post("/", zValidator("json", registerVariantSchema),
     async(c) => {
     
     const { 
-        name,
+        variantNameId,
         meaning,
         content,
         audioUrl,
         example,
         translationExample,
-        state,
-        municipality,
-        locality,
+        stateId,
+        municipalityId,
+        localityId,
         termId
       } = c.req.valid('json');
 
     const db = c.get('db')
 
     const newVariant = await db.insert(variantsTable).values({
-        name: name,
+        variantNameId: variantNameId,
         content: content,
         meaning: meaning,
         audioUrl: audioUrl,
         example: example,
         translationExample: translationExample,
-        state: state,
-        municipality: municipality,
-        locality: locality,
+        stateId: stateId,
+        municipalityId: municipalityId,
+        localityId: localityId,
         termId: termId
     }).returning({
         id: variantsTable.id,
-        name: variantsTable.name,
+        variantNameId: variantsTable.variantNameId,
         meaning: variantsTable.meaning,
         audioUrl: variantsTable.audioUrl,
         example: variantsTable.example,
         translationExample: variantsTable.translationExample,
-        state: variantsTable.state,
-        municipality: variantsTable.municipality,
-        locality: variantsTable.locality,
+        stateId: variantsTable.stateId,
+        municipalityId: variantsTable.municipalityId,
+        localityId: variantsTable.localityId,
         termId: variantsTable.termId
     })
 

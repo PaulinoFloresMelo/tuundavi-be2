@@ -17,25 +17,62 @@ export const usersTable = sqliteTable('users', {
 
 export const variantsTable = sqliteTable('variants', {
   id: integer('id').primaryKey(),
-  name: text('name').notNull(),
+  variantNameId: integer('variant_name_id')
+    .notNull()
+    .references(() => variantsNameTable.id),
   meaning: text('meaning').notNull(),
   content: text('content').notNull(),
   audioUrl: text('audio_url').notNull(),
   example: text('example').notNull(),
   translationExample: text('translation_example').notNull(),
-  state:text('state').notNull(),
-  municipality: text('municipality').notNull(),
-  locality: text('locality').notNull(),
   email: text('email'),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
-  termId: integer('term_id')
+
+  stateId: integer('state_id')
     .notNull()
+    .references(() => statesTable.id),
+
+  municipalityId: integer('municipality_id')
+    .notNull()
+    .references(() => municipalitiesTable.id),
+
+  localityId: integer('locality_id')
+    .notNull()
+    .references(() => localitiesTable.id),
+
+  termId: integer('term_id')
     .references(() => termsTable.id, { onDelete: 'cascade' }),
   createdAt: text('created_at')
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
 });
+
+export const variantsNameTable = sqliteTable('variantsName', {
+  id: integer('id').primaryKey(),
+  name: text('name').notNull(),
+})
+
+export const statesTable = sqliteTable('states', {
+  id: integer('id').primaryKey(),
+  name: text('name').notNull(),
+})
+
+export const municipalitiesTable = sqliteTable('municipalities', {
+  id: integer('id').primaryKey(),
+  name: text('name').notNull(),
+  stateId: integer('state_id')
+    .notNull()
+    .references(() => statesTable.id),
+})
+
+export const localitiesTable = sqliteTable('localities', {
+  id: integer('id').primaryKey(),
+  name: text('name').notNull(),
+  municipalityId: integer('municipality_id')
+    .notNull()
+    .references(() => municipalitiesTable.id),
+})
 
 export const variantsRelations = relations(variantsTable, ({ one }) => ({
   term: one(termsTable, {
@@ -53,6 +90,14 @@ export const termsTable = sqliteTable('terms', {
 
 export const termsRelations = relations(termsTable, ({ many }) => ({
   variants: many(variantsTable),
+}));
+
+export const statesRelations = relations(statesTable, ({ many }) => ({
+  municipalities: many(municipalitiesTable),
+}));
+
+export const municipalitiesRelations = relations(municipalitiesTable, ({ many }) => ({
+  municipalities: many(localitiesTable),
 }));
 
 export type InsertUser = typeof usersTable.$inferInsert;

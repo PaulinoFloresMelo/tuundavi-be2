@@ -1,9 +1,123 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4d1fbdb5-babb-4ce4-9f69-9351c5577517",
+  "id": "d770bfda-52ba-435d-8008-d6549138159f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "localities": {
+      "name": "localities",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "municipality_id": {
+          "name": "municipality_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "localities_municipality_id_municipalities_id_fk": {
+          "name": "localities_municipality_id_municipalities_id_fk",
+          "tableFrom": "localities",
+          "tableTo": "municipalities",
+          "columnsFrom": [
+            "municipality_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "municipalities": {
+      "name": "municipalities",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "state_id": {
+          "name": "state_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "municipalities_state_id_states_id_fk": {
+          "name": "municipalities_state_id_states_id_fk",
+          "tableFrom": "municipalities",
+          "tableTo": "states",
+          "columnsFrom": [
+            "state_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "states": {
+      "name": "states",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "terms": {
       "name": "terms",
       "columns": {
@@ -126,8 +240,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "variants": {
-      "name": "variants",
+    "variantsName": {
+      "name": "variantsName",
       "columns": {
         "id": {
           "name": "id",
@@ -138,6 +252,30 @@
         },
         "name": {
           "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "variants": {
+      "name": "variants",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "variant_name_id": {
+          "name": "variant_name_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -178,27 +316,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "municipality": {
-          "name": "municipality",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "locality": {
-          "name": "locality",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "email": {
           "name": "email",
           "type": "text",
@@ -214,11 +331,32 @@
           "autoincrement": false,
           "default": false
         },
+        "state_id": {
+          "name": "state_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "municipality_id": {
+          "name": "municipality_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locality_id": {
+          "name": "locality_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "term_id": {
           "name": "term_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -239,6 +377,58 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "variants_variant_name_id_variantsName_id_fk": {
+          "name": "variants_variant_name_id_variantsName_id_fk",
+          "tableFrom": "variants",
+          "tableTo": "variantsName",
+          "columnsFrom": [
+            "variant_name_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "variants_state_id_states_id_fk": {
+          "name": "variants_state_id_states_id_fk",
+          "tableFrom": "variants",
+          "tableTo": "states",
+          "columnsFrom": [
+            "state_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "variants_municipality_id_municipalities_id_fk": {
+          "name": "variants_municipality_id_municipalities_id_fk",
+          "tableFrom": "variants",
+          "tableTo": "municipalities",
+          "columnsFrom": [
+            "municipality_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "variants_locality_id_localities_id_fk": {
+          "name": "variants_locality_id_localities_id_fk",
+          "tableFrom": "variants",
+          "tableTo": "localities",
+          "columnsFrom": [
+            "locality_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "variants_term_id_terms_id_fk": {
           "name": "variants_term_id_terms_id_fk",
           "tableFrom": "variants",
