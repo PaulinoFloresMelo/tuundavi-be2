@@ -3,10 +3,11 @@ import { validator } from 'hono/validator';
 import { eq, like, or, sql } from 'drizzle-orm';
 import { factory } from '../factory'
 import { zValidator } from '@hono/zod-validator';
-import { termsTable } from "../db/schema";
-import { variantsTable } from "../db/schema";
+import { meanings} from "../db/schema";
+import { terms } from "../db/schema";
 
-export const termRouter = factory.createApp()
+// export const termRouter = factory.createApp()
+export const meaningRouter = factory.createApp()
 
 const queryValidation = validator('query', (value, c) => {
   const offset = Number(value?.offset) || 0;
@@ -26,12 +27,14 @@ const registerTermSchema = z.object({
     meaning: z.string().trim().min(1).toLowerCase(),
     imageUrl: z.string().trim().min(1).toLowerCase(),
     category: z.string().trim().min(1).toLowerCase(),
+    meaningId: z.number().min(1)
 })
 
 const updateTermSchema = z.object({
     meaning: z.string().trim().min(1).toLowerCase().optional(),
     imageUrl: z.string().trim().min(1).toLowerCase().optional(),
     category: z.string().trim().min(1).toLowerCase().optional(),
+    meaningId: z.number().min(1).optional()
 });
 
 export const searchTermSchema = z.object({
@@ -40,7 +43,7 @@ export const searchTermSchema = z.object({
 
 
 // /api/v1/terms
-termRouter.get(
+meaningRouter.get(
   "/",
   queryValidation,
   async (c) => {
@@ -51,24 +54,24 @@ termRouter.get(
     const filters: any[] = [];
 
     if (category && category.length > 0) {
-      filters.push(eq(termsTable.category, category));
+      filters.push(eq(meanings.category, category));
     }
 
     if (letter && letter.length === 1) {
       filters.push(
-        sql`LOWER(${termsTable.meaning}) LIKE LOWER(${letter + '%'})`
+        sql`LOWER(${meanings.meaning}) LIKE LOWER(${letter + '%'})`
       );
     }
 
     // ---------- CONSULTA PRINCIPAL (solo términos) ----------
     let query = db
       .select({
-        id: termsTable.id,
-        category: termsTable.category,
-        meaning: termsTable.meaning,
-        imageUrl: termsTable.imageUrl,
+        id: meanings.id,
+        category: meanings.category,
+        meaning: meanings.meaning,
+        imageUrl: meanings.imageUrl,
       })
-      .from(termsTable)
+      .from(meanings)
       .limit(limit)
       .offset(offset)
       .$dynamic();
@@ -82,7 +85,7 @@ termRouter.get(
     // ---------- CONTEO TOTAL (con los mismos filtros) ----------
     let countQuery = db
       .select({ count: sql<number>`count(*)` })
-      .from(termsTable)
+      .from(meanings)
       .$dynamic();
 
     if (filters.length > 0) {
@@ -104,7 +107,7 @@ termRouter.get(
 );
 
 // GET /api/v1/terms/searchWithVariants?q=mi-contenido
-termRouter.get('/searchWithVariants',
+meaningRouter.get('/searchWithVariants',
     async (c) => {
       // const q = c.req.param('q')
       const q = c.req.query('q');
@@ -117,17 +120,17 @@ termRouter.get('/searchWithVariants',
 
       try {
           // Buscar el primer resultado que coincida (parcial o exacto)
-          const terms = await db
+          const data = await db
           .select()
-          .from(termsTable)
+          .from(meanings)
           .where(
               or(
-                  like(sql`LOWER(${termsTable.meaning})`, `%${q.toLowerCase()}%`)
+                  like(sql`LOWER(${meanings.meaning})`, `%${q.toLowerCase()}%`)
               )
           )
           .limit(10); // puedes ajustar o quitar el límite según necesites
 
-          if (terms.length === 0) {
+          if (data.length === 0) {
             return c.json(
                 { success: false, message: 'Término no encontrado' },
                 404
@@ -136,32 +139,32 @@ termRouter.get('/searchWithVariants',
 
           const variants = await db
             .select({
-              id: variantsTable.id,
-              variantNameId: variantsTable.variantNameId,
-              meaning: variantsTable.meaning,
-              content: variantsTable.content,
-              audioUrl: variantsTable.audioUrl,
-              example: variantsTable.example,
-              translationExample: variantsTable.translationExample,
-              stateId: variantsTable.stateId,
-              municipalityId: variantsTable.municipalityId,
-              localityId: variantsTable.localityId,
-              email: variantsTable.email,
-              isActive: variantsTable.isActive,
+              id: terms.id,
+              variantId: terms.variantId,
+              meaning: terms.meaning,
+              content: terms.content,
+              audioUrl: terms.audioUrl,
+              example: terms.example,
+              translationExample: terms.translationExample,
+              stateId: terms.stateId,
+              municipalityId: terms.municipalityId,
+              localityId: terms.localityId,
+              email: terms.email,
+              isActive: terms.isActive,
               // Si quieres createdAt/updatedAt, agrégalos aquí
             })
-            .from(variantsTable)
-            .where(eq(variantsTable.termId, terms[0].id));
+            .from(terms)
+            .where(eq(terms.meaningId, data[0].id));
 
             // 3. Armar respuesta anidada
             const term = {
-              id: terms[0].id,
-              category: terms[0].category,
-              meaning: terms[0].meaning,
-              imageUrl: terms[0].imageUrl,
+              id: data[0].id,
+              category: data[0].category,
+              meaning: data[0].meaning,
+              imageUrl: data[0].imageUrl,
               variants: variants.map(v => ({
                 id: v.id,
-                variantNameId: v.variantNameId,
+                variantId: v.variantId,
                 meaning: v.meaning,
                 content: v.content,
                 stateId: v.stateId,
@@ -185,7 +188,7 @@ termRouter.get('/searchWithVariants',
 );
 
 // GET /api/v1/terms/search?q=mi-contenido
-termRouter.get('/search', 
+meaningRouter.get('/search', 
     async (c) => {
         // const q = c.req.param('q')
         const q = c.req.query('q');
@@ -200,11 +203,11 @@ termRouter.get('/search',
             // Buscar el primer resultado que coincida (parcial o exacto)
             const terms = await db
             .select()
-            .from(termsTable)
+            .from(meanings)
             .where(
                 or(
-                    // like(sql`LOWER(${termsTable.content})`, `%${q.toLowerCase()}%`),
-                    like(sql`LOWER(${termsTable.meaning})`, `%${q.toLowerCase()}%`)
+                    // like(sql`LOWER(${meanings.content})`, `%${q.toLowerCase()}%`),
+                    like(sql`LOWER(${meanings.meaning})`, `%${q.toLowerCase()}%`)
                 )
             )
             .limit(10); // puedes ajustar o quitar el límite según necesites
@@ -226,7 +229,7 @@ termRouter.get('/search',
 );
 
 // /api/v1/terms/:id
-termRouter.get(
+meaningRouter.get(
   "/:id",
   async (c) => {
     const id = c.req.param('id');
@@ -240,14 +243,14 @@ termRouter.get(
     // 1. Obtener el término
     const termResult = await db
       .select({
-        id: termsTable.id,
-        category: termsTable.category,
-        meaning: termsTable.meaning,
-        imageUrl: termsTable.imageUrl,
-        // Agrega aquí otros campos que tenga termsTable (ej. createdAt, userId)
+        id: meanings.id,
+        category: meanings.category,
+        meaning: meanings.meaning,
+        imageUrl: meanings.imageUrl,
+        // Agrega aquí otros campos que tenga meaningsTable (ej. createdAt, userId)
       })
-      .from(termsTable)
-      .where(eq(termsTable.id, idNum))
+      .from(meanings)
+      .where(eq(meanings.id, idNum))
       .limit(1);
 
     if (!termResult || termResult.length === 0) {
@@ -259,22 +262,22 @@ termRouter.get(
     // 2. Obtener TODAS las variantes de este término
     const variants = await db
       .select({
-        id: variantsTable.id,
-        variantNameId: variantsTable.variantNameId,
-        meaning: variantsTable.meaning,
-        content: variantsTable.content,
-        audioUrl: variantsTable.audioUrl,
-        example: variantsTable.example,
-        translationExample: variantsTable.translationExample,
-        stateId: variantsTable.stateId,
-        municipalityId: variantsTable.municipalityId,
-        localityId: variantsTable.localityId,
-        email: variantsTable.email,
-        isActive: variantsTable.isActive,
+        id: terms.id,
+        variantId: terms.variantId,
+        meaning: terms.meaning,
+        content: terms.content,
+        audioUrl: terms.audioUrl,
+        example: terms.example,
+        translationExample: terms.translationExample,
+        stateId: terms.stateId,
+        municipalityId: terms.municipalityId,
+        localityId: terms.localityId,
+        email: terms.email,
+        isActive: terms.isActive,
         // Si quieres createdAt/updatedAt, agrégalos aquí
       })
-      .from(variantsTable)
-      .where(eq(variantsTable.termId, idNum));
+      .from(terms)
+      .where(eq(terms.meaningId, idNum));
 
     // 3. Armar respuesta anidada
     const term = {
@@ -284,7 +287,7 @@ termRouter.get(
       imageUrl: termData.imageUrl,
       variants: variants.map(v => ({
         id: v.id,
-        variantNameId: v.variantNameId,
+        variantId: v.variantId,
         meaning: v.meaning,
         content: v.content,
         stateId: v.stateId,
@@ -304,7 +307,7 @@ termRouter.get(
 
 
 // /api/v1/terms/:id
-termRouter.patch("/:id", zValidator('json', updateTermSchema),
+meaningRouter.patch("/:id", zValidator('json', updateTermSchema),
     async(c) => {
         const id = c.req.param('id')
         
@@ -312,9 +315,9 @@ termRouter.patch("/:id", zValidator('json', updateTermSchema),
         const updateData = c.req.valid('json');
 
         const result = await db
-        .update(termsTable)
+        .update(meanings)
         .set(updateData)
-        .where(eq(termsTable.id, Number(id)))
+        .where(eq(meanings.id, Number(id)))
         .returning();
 
         if (result.length === 0) {
@@ -326,37 +329,33 @@ termRouter.patch("/:id", zValidator('json', updateTermSchema),
 );
 
 // /api/v1/terms
-termRouter.post("/", zValidator("json", registerTermSchema),
+meaningRouter.post("/", zValidator("json", registerTermSchema),
     async(c) => {
     
-    const { 
-        meaning, 
-        imageUrl,
-        category
-      } = c.req.valid('json');
+    const data = c.req.valid('json');
 
     const db = c.get('db')
     const [term] = await db
     .select()
-    .from(termsTable)
-    .where( sql`LOWER(${termsTable.meaning}) = LOWER(${meaning})`)
+    .from(meanings)
+    .where( sql`LOWER(${meanings.meaning}) = LOWER(${meanings})`)
 
     if (term) {
         return c.json({ message: "Term already registered" }, 400)
     }
 
-    const newTerm = await db.insert(termsTable).values({
-        meaning: meaning,
-        imageUrl: imageUrl,
-        category: category,
+    const newTerm = await db.insert(meanings).values({
+        meaning: data.meaning,
+        imageUrl: data.imageUrl,
+        category: data.category,
     }).returning({
-        id: termsTable.id,
-        meaning: termsTable.meaning,
-        imageUrl: termsTable.imageUrl,
-        category: termsTable.category,
+        id: meanings.id,
+        meaning: meanings.meaning,
+        imageUrl: meanings.imageUrl,
+        category: meanings.category,
     })
 
     return c.json(newTerm[0])
 })
 
-export default termRouter;
+export default meaningRouter;

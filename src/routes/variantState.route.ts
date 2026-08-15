@@ -3,7 +3,7 @@ import { validator } from 'hono/validator';
 import { eq } from 'drizzle-orm';
 import { factory } from '../factory'
 import { zValidator } from '@hono/zod-validator';
-import { statesTable } from "../db/schema";
+import { states } from "../db/schema";
 
 export const variantStateRouter = factory.createApp()
 
@@ -36,7 +36,7 @@ variantStateRouter.get(
 
         const variants = await db
                 .select()
-                .from(statesTable)
+                .from(states)
 
         return c.json({data: variants})
     }
@@ -52,8 +52,8 @@ variantStateRouter.get(
         const db = c.get('db')
         const term = await db
         .select()
-        .from(statesTable)
-        .where(eq(statesTable.id, parseInt(id)))
+        .from(states)
+        .where(eq(states.id, (id)))
 
         return c.json(term[0])
 });
@@ -69,9 +69,9 @@ variantStateRouter.patch(
         const updateData = c.req.valid('json');
 
         const result = await db
-        .update(statesTable)
+        .update(states)
         .set(updateData)
-        .where(eq(statesTable.id, Number(id)))
+        .where(eq(states.id, (id)))
         .returning();
 
         if (result.length === 0) {
@@ -92,12 +92,12 @@ variantStateRouter.post("/", zValidator("json", registerVariantSchema),
 
     const db = c.get('db')
 
-    const newVariant = await db.insert(statesTable).values({
+    const newVariant = await db.insert(states).values({
         name: name,
-       
+        id: '' // pide el id porque se declara como text en el esquema
     }).returning({
-        id: statesTable.id,
-        name: statesTable.name,
+        id: states.id,
+        name: states.name,
         
     })
 

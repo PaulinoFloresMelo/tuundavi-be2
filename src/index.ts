@@ -1,7 +1,7 @@
 
 import { authRouter } from './routes/auth.route';
-import { termRouter } from './routes/term.route';
-import { variantRouter } from './routes/variant.route';
+import { meaningRouter } from './routes/meaning.route';
+import { termNahuatlRouter } from './routes/terms-nahuatl.route';
 import { variantNameRouter } from './routes/variantName.route';
 import { variantStateRouter } from './routes/variantState.route';
 import { imageRouter} from './routes/image.route';
@@ -32,8 +32,8 @@ app.use('/api/*', cors({
 app.use('*', dbMiddleware)
 
 app.route('/api/v1/auth', authRouter)
-app.route('/api/v1/terms', termRouter)
-app.route('/api/v1/variants', variantRouter)
+app.route('/api/v1/meanings', meaningRouter)
+app.route('/api/v1/termsNahuatl', termNahuatlRouter)
 app.route('/api/v1/variantsName', variantNameRouter)
 app.route('/api/v1/variantsState', variantStateRouter)
 app.route('/api/v1/images', imageRouter)
