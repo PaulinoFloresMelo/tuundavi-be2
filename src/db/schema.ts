@@ -96,54 +96,6 @@ export const variants_states = sqliteTable(
   })
 );
 
-export const variantsRelations = defineRelations({ variants, states, variants_states, terms },
-  (r) => ({
-    variants: {
-      states: r.many.states({
-        from: r.variants.id.through(r.variants_states.variantId),
-        to: r.states.id.through(r.variants_states.stateId),
-      }),
-      terms: r.many.terms()
-    },
-    states: {
-      states: r.many.variants(),
-    },
-    terms: {
-      variants: r.one.variants({
-        from: r.terms.variantId,
-        to: r.variants.id
-      })
-    },
-  })
-);
-
-// export const termsRelations = relations(meaningsTable, ({ many }) => ({
-//   variants: many(termsNahuatlTable),
-// }));
-
-export const statesRelations = defineRelations({ states, municipalities }, (r) => ({
-  municipalities: {
-    state: r.one.states({
-      from: r.municipalities.stateId,
-      to: r.states.id
-    })
-  },
-  states: {
-    municipalities: r.many.municipalities(),
-  }
-}));
-
-export const municipalitiesRelations = defineRelations({ municipalities, localities }, (r) => ({
-  localities: {
-    municipality: r.one.municipalities({
-      from: r.localities.municipalityId,
-      to: r.municipalities.id
-    })
-  },
-  municipalities: {
-    localities: r.many.localities()
-  }
-}));
 
 export type InsertUser = typeof usersTable.$inferInsert;
 export type SelectUser = typeof usersTable.$inferSelect;

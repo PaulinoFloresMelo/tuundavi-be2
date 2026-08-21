@@ -2,10 +2,11 @@
 import { authRouter } from './routes/auth.route';
 import { meaningRouter } from './routes/meaning.route';
 import { termNahuatlRouter } from './routes/terms-nahuatl.route';
-import { variantNameRouter } from './routes/variantName.route';
+import { variantRouter } from './routes/variants.route';
 import { variantStateRouter } from './routes/variantState.route';
-import { imageRouter} from './routes/image.route';
-import { audioRouter} from './routes/audio.route';
+import { stateRouter } from './routes/states.route';
+import { imageRouter } from './routes/image.route';
+import { audioRouter } from './routes/audio.route';
 import { cors } from 'hono/cors';
 import { factory } from './factory'
 
@@ -34,8 +35,9 @@ app.use('*', dbMiddleware)
 app.route('/api/v1/auth', authRouter)
 app.route('/api/v1/meanings', meaningRouter)
 app.route('/api/v1/termsNahuatl', termNahuatlRouter)
-app.route('/api/v1/variantsName', variantNameRouter)
+app.route('/api/v1/variants', variantRouter)
 app.route('/api/v1/variantsState', variantStateRouter)
+app.route('/api/v1/states', stateRouter)
 app.route('/api/v1/images', imageRouter)
 app.route('/api/v1/audio', audioRouter)
 
