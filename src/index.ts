@@ -12,6 +12,7 @@ import { factory } from './factory'
 
 // import imageRouter from './routes/image.route';
 import { dbMiddleware } from './middlewares/db'
+import municipalityRouter from './routes/municipalities.route';
 
 const app = factory.createApp()
 
@@ -36,6 +37,7 @@ app.route('/api/v1/auth', authRouter)
 app.route('/api/v1/meanings', meaningRouter)
 app.route('/api/v1/termsNahuatl', termNahuatlRouter)
 app.route('/api/v1/variants', variantRouter)
+app.route('/api/v1/municipalities', municipalityRouter)
 app.route('/api/v1/variantsState', variantStateRouter)
 app.route('/api/v1/states', stateRouter)
 app.route('/api/v1/images', imageRouter)
