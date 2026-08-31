@@ -1,5 +1,5 @@
 
-import { sql, defineRelations } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core';
 
 export const usersTable = sqliteTable('users', {
@@ -14,12 +14,11 @@ export const usersTable = sqliteTable('users', {
 });
 
 export const terms = sqliteTable('terms', {
-  id: integer('id').primaryKey(),
+  id: text('id').notNull().primaryKey(),
   variantId: integer('variant_id')
     .notNull()
     .references(() => variants.id),
   content: text('content').notNull(),
-  meaning: text('meaning').notNull(),
   audioUrl: text('audio_url').notNull(),
   example: text('example').notNull(),
   translationExample: text('translation_example').notNull(),
