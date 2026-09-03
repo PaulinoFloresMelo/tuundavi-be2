@@ -63,17 +63,41 @@ const municipalitiesRelations = defineRelations(
   })
 );
 
+// const meaningsRelations = defineRelations(
+//   { meanings, terms }, 
+//   (r) => ({
+//     terms: {
+//       meaning: r.one.meanings({
+//         from: r.terms.meaningId,
+//         to: r.meanings.id
+//       })
+//     },
+//     meanings: {
+//       terms: r.many.terms()
+//     }
+//   })
+// );
+
 const meaningsRelations = defineRelations(
-  { meanings, terms }, 
+  { meanings, terms, localities }, // <-- Agregamos localities aquí
   (r) => ({
     terms: {
       meaning: r.one.meanings({
         from: r.terms.meaningId,
         to: r.meanings.id
+      }),
+      // 👇 NUEVA RELACIÓN: de terms hacia localities
+      locality: r.one.localities({
+        from: r.terms.localityId,   // campo en terms
+        to: r.localities.id         // campo en localities
       })
     },
     meanings: {
       terms: r.many.terms()
+    },
+    // 👇 Relación inversa (opcional, pero recomendada)
+    localities: {
+      terms: r.many.terms() // si quieres consultar localidad -> términos
     }
   })
 );

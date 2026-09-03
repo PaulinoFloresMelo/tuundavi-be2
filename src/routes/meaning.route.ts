@@ -236,7 +236,12 @@ meaningRouter.get("/:id", async (c) => {
   const meaning = await db.query.meanings.findFirst({
     where: { id : id },
     with: {
-      terms: true,   // <-- Incluye los terminos relacionados
+      // terms: true,   // <-- Incluye los terminos relacionados
+      terms: {
+        with: {
+          locality: true, // <-- Aquí está la clave
+        },
+      }
     },
   });
 
@@ -247,34 +252,5 @@ meaningRouter.get("/:id", async (c) => {
   return c.json(meaning);
 });
 
-// /api/v1/terms
-// meaningRouter.post("/", zValidator("json", registerTermSchema),
-//     async(c) => {
-    
-//     const data = c.req.valid('json');
-
-//     const db = c.get('db')
-//     const [term] = await db
-//     .select()
-//     .from(meanings)
-//     .where( sql`LOWER(${meanings.meaning}) = LOWER(${meanings})`)
-
-//     if (term) {
-//         return c.json({ message: "Term already registered" }, 400)
-//     }
-
-//     const newTerm = await db.insert(meanings).values({
-//         meaning: data.meaning,
-//         imageUrl: data.imageUrl,
-//         category: data.category,
-//     }).returning({
-//         id: meanings.id,
-//         meaning: meanings.meaning,
-//         imageUrl: meanings.imageUrl,
-//         category: meanings.category,
-//     })
-
-//     return c.json(newTerm[0])
-// })
 
 export default meaningRouter;
