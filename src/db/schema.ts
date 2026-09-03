@@ -20,8 +20,8 @@ export const terms = sqliteTable('terms', {
     .references(() => variants.id),
   content: text('content').notNull(),
   audioUrl: text('audio_url').notNull(),
-  example: text('example').notNull(),
-  translationExample: text('translation_example').notNull(),
+  example: text('example'),
+  translationExample: text('translation_example'),
   email: text('email'),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
 
@@ -72,7 +72,7 @@ export const localities = sqliteTable('localities', {
 })
 
 export const meanings = sqliteTable('meanings', {
-  id: integer('id').primaryKey(),
+  id: text('id').primaryKey(),
   meaning: text('meaning').unique().notNull(),
   imageUrl: text('image_url').notNull(),
   category: text('category').notNull(),

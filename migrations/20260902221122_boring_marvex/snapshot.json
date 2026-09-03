@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "6aeea696-d5e5-4efa-a296-1432cc070a57",
+  "id": "9f9e7186-7fa6-4f59-b658-f03f77bfcd2d",
   "prevIds": [
-    "4a2a4493-29d7-450b-af52-ce4bb6f7da03"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -159,7 +159,7 @@
       "table": "states"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -194,23 +194,13 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "meaning",
-      "entityType": "columns",
-      "table": "terms"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
       "name": "audio_url",
       "entityType": "columns",
       "table": "terms"
     },
     {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -220,7 +210,7 @@
     },
     {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,

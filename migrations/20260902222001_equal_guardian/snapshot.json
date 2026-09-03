@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "d11d1f4a-820c-4bd1-a514-96e97a326aad",
+  "id": "f05a8f00-dbb9-4247-b26b-48f3e6c553f3",
   "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
+    "9f9e7186-7fa6-4f59-b658-f03f77bfcd2d"
   ],
   "ddl": [
     {
@@ -39,7 +39,7 @@
       "entityType": "tables"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -59,7 +59,7 @@
       "table": "localities"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": true,
       "autoincrement": false,
       "default": null,
@@ -69,7 +69,7 @@
       "table": "localities"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -109,7 +109,7 @@
       "table": "meanings"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -129,7 +129,7 @@
       "table": "municipalities"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": true,
       "autoincrement": false,
       "default": null,
@@ -139,7 +139,7 @@
       "table": "municipalities"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -159,7 +159,7 @@
       "table": "states"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -194,23 +194,13 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "meaning",
-      "entityType": "columns",
-      "table": "terms"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
       "name": "audio_url",
       "entityType": "columns",
       "table": "terms"
     },
     {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -220,7 +210,7 @@
     },
     {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -249,7 +239,7 @@
       "table": "terms"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": true,
       "autoincrement": false,
       "default": null,
@@ -259,7 +249,7 @@
       "table": "terms"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": true,
       "autoincrement": false,
       "default": null,
@@ -269,7 +259,7 @@
       "table": "terms"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": true,
       "autoincrement": false,
       "default": null,

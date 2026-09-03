@@ -1,7 +1,7 @@
 CREATE TABLE `localities` (
-	`id` integer PRIMARY KEY,
+	`id` text PRIMARY KEY,
 	`name` text NOT NULL,
-	`municipality_id` integer NOT NULL,
+	`municipality_id` text NOT NULL,
 	CONSTRAINT `fk_localities_municipality_id_municipalities_id_fk` FOREIGN KEY (`municipality_id`) REFERENCES `municipalities`(`id`)
 );
 --> statement-breakpoint
@@ -13,30 +13,29 @@ CREATE TABLE `meanings` (
 );
 --> statement-breakpoint
 CREATE TABLE `municipalities` (
-	`id` integer PRIMARY KEY,
+	`id` text PRIMARY KEY,
 	`name` text NOT NULL,
-	`state_id` integer NOT NULL,
+	`state_id` text NOT NULL,
 	CONSTRAINT `fk_municipalities_state_id_states_id_fk` FOREIGN KEY (`state_id`) REFERENCES `states`(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `states` (
-	`id` integer PRIMARY KEY,
+	`id` text PRIMARY KEY,
 	`name` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `terms` (
-	`id` integer PRIMARY KEY,
+	`id` text PRIMARY KEY,
 	`variant_id` integer NOT NULL,
 	`content` text NOT NULL,
-	`meaning` text NOT NULL,
 	`audio_url` text NOT NULL,
-	`example` text NOT NULL,
-	`translation_example` text NOT NULL,
+	`example` text,
+	`translation_example` text,
 	`email` text,
 	`is_active` integer DEFAULT false NOT NULL,
-	`state_id` integer NOT NULL,
-	`municipality_id` integer NOT NULL,
-	`locality_id` integer NOT NULL,
+	`state_id` text NOT NULL,
+	`municipality_id` text NOT NULL,
+	`locality_id` text NOT NULL,
 	`meaning_id` integer,
 	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
