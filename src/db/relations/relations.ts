@@ -5,7 +5,8 @@ import {
   variants_states, 
   terms,
   municipalities,
-  localities
+  localities,
+  meanings
  } from '../schema';
 
 const variantsRelations = defineRelations(
@@ -62,8 +63,24 @@ const municipalitiesRelations = defineRelations(
   })
 );
 
+const meaningsRelations = defineRelations(
+  { meanings, terms }, 
+  (r) => ({
+    terms: {
+      meaning: r.one.meanings({
+        from: r.terms.meaningId,
+        to: r.meanings.id
+      })
+    },
+    meanings: {
+      terms: r.many.terms()
+    }
+  })
+);
+
 export const relations = {
   ...variantsRelations,
   ...statesRelations,
-  ...municipalitiesRelations
+  ...municipalitiesRelations,
+  ...meaningsRelations
 };

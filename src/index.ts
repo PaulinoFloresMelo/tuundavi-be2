@@ -35,7 +35,7 @@ app.use('*', dbMiddleware)
 
 app.route('/api/v1/auth', authRouter)
 app.route('/api/v1/meanings', meaningRouter)
-app.route('/api/v1/termsNahuatl', termNahuatlRouter)
+app.route('/api/v1/terms', termNahuatlRouter)
 app.route('/api/v1/variants', variantRouter)
 app.route('/api/v1/municipalities', municipalityRouter)
 app.route('/api/v1/variantsState', variantStateRouter)
